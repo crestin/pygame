@@ -1,48 +1,53 @@
 #!/usr/bin/env python
 """ pygame.examples.aliens
 
-Shows a mini game where you have to defend against aliens.
+这是一个防御外星人的小游戏
 
-What does it show you about pygame?
+游戏将使用 Pygame 的以下知识点：
 
-* pg.sprite, the difference between Sprite and Group.
-* dirty rectangle optimization for processing for speed.
-* music with pg.mixer.music, including fadeout
-* sound effects with pg.Sound
-* event processing, keyboard handling, QUIT handling.
-* a main loop frame limited with a game clock from pg.time.Clock
-* fullscreen switching.
+* pg.sprite, Sprite 与 Group 之间的区别
+* 优化脏矩形技术（Dirty Rectangle）处理速度
+* 使用 pg.mixer.music, 完成音乐淡入淡出
+* 使用 pg.Sound 进行音效控制
+* 事件队列, 键盘处理, 退出（QUIT） 处理
+* 利用 pg.time.Clock 控制游戏主循环帧
+* 全屏切换
 
+脏矩形技术（Dirty Rectangle）
+在2D游戏中，每次更新屏幕，都将会将整个屏幕上的图像重新绘制一遍，而更新的内容往往不是很多，
+甚至只是一个小区域，强制重绘带来了很大的资源浪费，尤其是在一些休闲游戏、桌面游戏中体现明显。
+脏矩形技术正是利用只更新变化区域来达到提高引擎效率的目的。 
+在脏矩形系统中，屏幕上更新的区域被称为“脏矩形”，引擎仅仅将脏矩形部分重绘，而其他部分保持原样。
 
-Controls
+控制说明
 --------
 
-* Left and right arrows to move.
-* Space bar to shoot
-* f key to toggle between fullscreen.
+* 左右方向键用来移动
+* 空格用来发射
+* F 键控制全屏切换
 
 """
 
 import random
 import os
 
-# import basic pygame modules
+# 导入 pygame 基础模块
 import pygame as pg
 
-# see if we can load more than standard BMP
+# 判断能否加载标准BMP以外的图形格式
 if not pg.image.get_extended():
     raise SystemExit("Sorry, extended image module required")
 
 
-# game constants
-MAX_SHOTS = 2  # most player bullets onscreen
-ALIEN_ODDS = 22  # chances a new alien appears
-BOMB_ODDS = 60  # chances a new bomb will drop
-ALIEN_RELOAD = 12  # frames between new aliens
+# 游戏常量
+MAX_SHOTS = 2  # 屏幕中玩家子弹的最大数量
+ALIEN_ODDS = 22  # 一个新外新人出现的几率
+BOMB_ODDS = 60  # 炸弹出现的几率
+ALIEN_RELOAD = 12  # 新外星人的间隔帧
 SCREENRECT = pg.Rect(0, 0, 640, 480)
 SCORE = 0
 
-main_dir = os.path.split(os.path.abspath(__file__))[0]
+main_dir = os.path.split(os.path.abspath(__file__))[0]  # 游戏路径
 
 
 def load_image(file):
@@ -70,16 +75,16 @@ def load_sound(file):
     return None
 
 
-# Each type of game object gets an init and an update function.
-# The update function is called once per frame, and it is when each object should
-# change it's current position and state.
+# 游戏中每个对象类型都具有一个 init 和一个 update 函数
+# 每帧调用一次 update 函数，此时每个对象都会调用
+# 改变当前的位置和状态。
 #
-# The Player object actually gets a "move" function instead of update,
-# since it is passed extra information about the keyboard.
+# Player 对象实际上用了一个 “move” 函数而不是 update
+# 因为它传递了关于键盘的额外信息。
 
 
 class Player(pg.sprite.Sprite):
-    """ Representing the player as a moon buggy type car.
+    """ 玩家被设计成一辆月球车
     """
 
     speed = 10
@@ -285,14 +290,14 @@ def main(winstyle=0):
         pg.mixer.music.load(music)
         pg.mixer.music.play(-1)
 
-    # Initialize Game Groups
+    # 初始化游戏组
     aliens = pg.sprite.Group()
     shots = pg.sprite.Group()
     bombs = pg.sprite.Group()
     all = pg.sprite.RenderUpdates()
-    lastalien = pg.sprite.GroupSingle()
+    lastalien = pg.sprite.GroupSingle()  # 单个精灵的组容器，可以为空，新精灵加入将替换掉旧的
 
-    # assign default groups to each sprite class
+    # 为每个精灵分配默认组
     Player.containers = all
     Alien.containers = aliens, all, lastalien
     Shot.containers = shots, all
